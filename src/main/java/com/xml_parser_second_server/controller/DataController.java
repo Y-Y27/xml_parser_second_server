@@ -15,7 +15,6 @@ public class DataController {
 
     private final InputDataHandler inputDataHandler;
 
-
     private final OrganizationRepository organizationRepository;
 
     private final ReportDocRepository reportDocRepository;
