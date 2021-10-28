@@ -33,71 +33,56 @@ public class InputDataHandler {
 
         for (DataFromTransfer.InnerDataList innerData : innerDataList) {
 
-            DataFromTransfer.InnerDataList.payDoc innerDataPayDoc = innerData.getPayDoc();
-            DataFromTransfer.InnerDataList.ReportDoc reportDoc1 = innerData.getReportDoc();
+            DataFromTransfer.InnerDataList.payDoc payDoc = innerData.getPayDoc();
+            DataFromTransfer.InnerDataList.ReportDoc reportDoc = innerData.getReportDoc();
 
-            List<DataFromTransfer.InnerDataList.payDoc.bankRCPList> bankRCPList = innerData.getPayDoc().getBankRCPList();
-            List<DataFromTransfer.InnerDataList.payDoc.bankPayList> bankPayList = innerData.getPayDoc().getBankPayList();
+            DataFromTransfer.InnerDataList.payDoc.bankRCP bankRCP = payDoc.getBankRCP();
+            DataFromTransfer.InnerDataList.payDoc.bankPay bankPay = payDoc.getBankPay();
 
-            for (DataFromTransfer.InnerDataList.payDoc.bankRCPList bankRCP : bankRCPList) {
-                for (DataFromTransfer.InnerDataList.payDoc.bankPayList bankPay : bankPayList) {
+            String bankRCPBIC_pay = bankRCP.getBIC_PAY();
+            String bankPayBIC_pay = bankPay.getBIC_PAY();
 
-                    String bankRCPBIC_pay = bankRCP.getBIC_PAY();
-                    String bankPayBIC_pay = bankPay.getBIC_PAY();
+            Optional<Bank> bankByBIC = checkBICInRepo(bankRCPBIC_pay, bankPayBIC_pay);
+            Bank bank = bankByBIC.orElseGet(() -> new Bank(bankRCPBIC_pay, bankPayBIC_pay));
+            payDoc.setBank(bank);
 
-                    Optional<Bank> bankByBIC = checkBICInRepo(bankRCPBIC_pay, bankPayBIC_pay);
-                    Bank bank = bankByBIC.orElseGet(() -> new Bank(bankRCPBIC_pay, bankPayBIC_pay));
-                    innerDataPayDoc.setBank(bank);
-                }
-            }
+            DataFromTransfer.InnerDataList.payDoc.infPay infPay = innerData.getPayDoc().getInfPay();
+            DataFromTransfer.InnerDataList.payDoc.infRcp infRcp = innerData.getPayDoc().getInfRcp();
 
-            List<DataFromTransfer.InnerDataList.payDoc.infPayList> infPayList = innerData.getPayDoc().getInfPayList();
-            List<DataFromTransfer.InnerDataList.payDoc.infRcpList> infRcpList = innerData.getPayDoc().getInfRcpList();
+            DataFromTransfer.InnerDataList.payDoc doc = checkOrganization(infPay, infRcp, payDoc);
 
-            DataFromTransfer.InnerDataList.payDoc payDoc = checkOrganization(infPayList, infRcpList, innerDataPayDoc);
-
-            reportDoc1.setPayDoc(payDoc);
-            reportDocRepository.save(reportDoc1);
+            reportDoc.setPayDoc(doc);
+            reportDocRepository.save(reportDoc);
         }
     }
 
-    public DataFromTransfer.InnerDataList.payDoc checkOrganization(List<DataFromTransfer.InnerDataList.payDoc.infPayList> infPayList,
-                                                                   List<DataFromTransfer.InnerDataList.payDoc.infRcpList> infRcpList,
+    public DataFromTransfer.InnerDataList.payDoc checkOrganization(DataFromTransfer.InnerDataList.payDoc.infPay infPay,
+                                                                   DataFromTransfer.InnerDataList.payDoc.infRcp infRcp,
                                                                    DataFromTransfer.InnerDataList.payDoc payDoc) {
-        String INN_PAY_Inf_PAY = null;
-        String KPP_PAY_Inf_PAY = null;
-        String CName_PAY_Inf_PAY = null;
 
-        String INN_PAY_Inf_RCP = null;
-        String KPP_PAY_Inf_RCP = null;
-        String CName_PAY_Inf_RCP = null;
+        String INN_PAY_Inf_PAY = infPay.getINN_PAY();
+        String KPP_PAY_Inf_PAY = infPay.getKPP_PAY();
+        String CName_PAY_Inf_PAY = infPay.getCName_PAY();
 
-        for (DataFromTransfer.InnerDataList.payDoc.infPayList infPay : infPayList) {
+        payDoc = checkINNandKPPorCName_Inf_PAY(INN_PAY_Inf_PAY, KPP_PAY_Inf_PAY, CName_PAY_Inf_PAY, payDoc);
 
-            INN_PAY_Inf_PAY = infPay.getINN_PAY();
-            KPP_PAY_Inf_PAY = infPay.getKPP_PAY();
-            CName_PAY_Inf_PAY = infPay.getCName_PAY();
+        String INN_PAY_Inf_RCP = infRcp.getINN_PAY();
+        String KPP_PAY_Inf_RCP = infRcp.getKPP_PAY();
+        String CName_PAY_Inf_RCP = infRcp.getCName_PAY();
 
-            payDoc = checkINNandKPPorCName_Inf_PAY(INN_PAY_Inf_PAY, KPP_PAY_Inf_PAY, CName_PAY_Inf_PAY, payDoc);
-        }
-
-        for (DataFromTransfer.InnerDataList.payDoc.infRcpList infRcp : infRcpList) {
-
-            INN_PAY_Inf_RCP = infRcp.getINN_PAY();
-            KPP_PAY_Inf_RCP = infRcp.getKPP_PAY();
-            CName_PAY_Inf_RCP = infRcp.getCName_PAY();
-
-            payDoc = checkINNandKPP_Inf_RCP(INN_PAY_Inf_RCP, KPP_PAY_Inf_RCP, CName_PAY_Inf_RCP, payDoc);
-        }
+        payDoc = checkINNandKPP_Inf_RCP(INN_PAY_Inf_RCP, KPP_PAY_Inf_RCP, CName_PAY_Inf_RCP, payDoc);
 
         if (payDoc.getOrganization() == null) {
-            Organization newOrganization = new Organization(
-                    INN_PAY_Inf_PAY,
-                    KPP_PAY_Inf_PAY,
-                    CName_PAY_Inf_PAY,
-                    INN_PAY_Inf_RCP,
-                    KPP_PAY_Inf_RCP,
-                    CName_PAY_Inf_RCP);
+
+            Organization newOrganization = new Organization();
+
+            newOrganization.setInfPayInnPay(INN_PAY_Inf_PAY);
+            newOrganization.setInfPayKppPay(KPP_PAY_Inf_PAY);
+            newOrganization.setInfPayCnamePay(CName_PAY_Inf_PAY);
+            newOrganization.setInfRcpInnPay(INN_PAY_Inf_RCP);
+            newOrganization.setInfRcpKppPay(KPP_PAY_Inf_RCP);
+            newOrganization.setInfRcpCnamePay(CName_PAY_Inf_RCP);
+
             payDoc.setOrganization(newOrganization);
         }
         return payDoc;

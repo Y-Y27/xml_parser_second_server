@@ -32,15 +32,6 @@ public class Organization {
 
     private String infRcpCnamePay;
 
-    public Organization(String InfPayInnPay, String InfPayKppPay, String InfPayCnamePay, String InfRcpInnPay, String InfRcpKppPay, String InfRcpCnamePay) {
-        this.infPayInnPay = InfPayInnPay;
-        this.infPayKppPay = InfPayKppPay;
-        this.infPayCnamePay = InfPayCnamePay;
-        this.infRcpInnPay = InfRcpInnPay;
-        this.infRcpKppPay = InfRcpKppPay;
-        this.infRcpCnamePay = InfRcpCnamePay;
-    }
-
     @Override
     public String toString() {
         return "Organization{" +

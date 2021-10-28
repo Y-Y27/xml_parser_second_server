@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.*;
 import java.util.List;
 
 @Data
@@ -34,9 +33,9 @@ public class DataFromTransfer {
             @Id
             private Long id;
 
-            @OneToOne (fetch = FetchType.LAZY)
+            @OneToOne(fetch = FetchType.LAZY)
             @MapsId
-            @JoinColumn (name = "id")
+            @JoinColumn(name = "id")
             private payDoc payDoc;
 
             private String DocNum;
@@ -70,17 +69,25 @@ public class DataFromTransfer {
             @JsonIgnore
             private Organization organization;
 
-            @Transient
-            List<InnerDataList.payDoc.infPayList> infPayList;
+            @OneToOne(cascade = CascadeType.ALL)
+            @MapsId
+            @JoinColumn(name = "id")
+            private InnerDataList.payDoc.infPay infPay;
 
-            @Transient
-            List<InnerDataList.payDoc.bankPayList> bankPayList;
+            @OneToOne(cascade = CascadeType.ALL)
+            @MapsId
+            @JoinColumn(name = "id")
+            private InnerDataList.payDoc.bankPay bankPay;
 
-            @Transient
-            List<InnerDataList.payDoc.infRcpList> infRcpList;
+            @OneToOne(cascade = CascadeType.ALL)
+            @MapsId
+            @JoinColumn(name = "id")
+            private InnerDataList.payDoc.infRcp infRcp;
 
-            @Transient
-            List<InnerDataList.payDoc.bankRCPList> bankRCPList;
+            @OneToOne(cascade = CascadeType.ALL)
+            @MapsId
+            @JoinColumn(name = "id")
+            private InnerDataList.payDoc.bankRCP bankRCP;
 
             private String Purpose;
 
@@ -88,7 +95,7 @@ public class DataFromTransfer {
             @Data
             @Entity
             @Table(name = "Inf_PAY")
-            public static class infPayList {
+            public static class infPay {
 
                 @Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -105,7 +112,7 @@ public class DataFromTransfer {
             @Data
             @Entity
             @Table(name = "Bank_PAY")
-            public static class bankPayList {
+            public static class bankPay {
 
                 @Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -122,7 +129,7 @@ public class DataFromTransfer {
             @Data
             @Entity
             @Table(name = "Inf_RCP")
-            public static class infRcpList {
+            public static class infRcp {
 
                 @Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -139,7 +146,7 @@ public class DataFromTransfer {
             @Data
             @Entity
             @Table(name = "Bank_RCP")
-            public static class bankRCPList {
+            public static class bankRCP {
 
                 @Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
